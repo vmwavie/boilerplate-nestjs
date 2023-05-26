@@ -5,11 +5,11 @@ import {CreateUserTable1682197861733} from './migrations/1682197861733-CreateUse
 
 export const appDataSource = new DataSource({
 	type: 'postgres',
-	host: '0.0.0.0', // 0.0.0.0 for external connection & backend-db-1 for connect to docker
+	host: '0.0.0.0', // 0.0.0.0 for external connection & db-1 for connect to docker
 	port: 5432,
 	username: 'postgres',
 	password: '123123',
-	database: 'blog-math',
+	database: 'payment-api',
 	synchronize: true,
 	logging: false,
 	entities: [User],

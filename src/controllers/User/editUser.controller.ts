@@ -1,3 +1,4 @@
+import * as crypto from 'crypto';
 import * as dotenv from 'dotenv';
 import {type Request, type Response} from 'express';
 import fs from 'fs';
@@ -18,24 +19,45 @@ class EditUserController {
 		const {id, name, email, role, verifyToken} = req.body as UserInterface;
 		const authToken = req.headers.authorization;
 
-		if (!authToken) {
+		if (!authToken || !verifyToken || !email) {
 			return res.status(401).end();
 		}
 
-		const [, token] = authToken.split(' ');
+		try {
+			const userRepository = appDataSource.getRepository(User);
+			const decryptToken = () => {
+				const buffer = Buffer.from(verifyToken, 'base64');
+				const iv = buffer.slice(0, 12);
+				const tag = buffer.slice(12, 28);
+				const encryptedData = buffer.slice(28);
+				const decipher = crypto.createDecipheriv('aes-256-gcm', process.env.TOKEN_HASH!, iv);
+				decipher.setAuthTag(tag);
+				const decryptedCode = Buffer.concat([decipher.update(encryptedData), decipher.final()]).toString('utf-8');
+				const parts = decryptedCode.split('-');
+				const timestamp = parseInt(parts[0], 10);
+				const currentTime = new Date().getTime();
+				const expirationTime = 10 * 60 * 1000;
+				return currentTime - timestamp <= expirationTime;
+			};
 
-		const sub = verify(
-			token,
-			process.env.CRYPT_HASH!,
-		) as Payload;
-		const userRepository = appDataSource.getRepository(User);
-		const userRole = await userRepository.findOne({where: {id: Number(sub.userId)}}) as UserInterface;
+			const isValid = decryptToken();
 
-		if (userRole.id !== Number(id)) {
-			return res.status(401).json('Unauthorized');
-		}
+			if (!isValid) {
+				return res.status(400).json('Invalid or expired token');
+			}
 
-		async function updateUser() {
+			const [, token] = authToken.split(' ');
+			const sub = verify(
+				token,
+				process.env.CRYPT_HASH!,
+			) as Payload;
+
+			const userRole = await userRepository.findOne({where: {id: Number(sub.userId)}}) as UserInterface;
+
+			if (userRole.id !== Number(id)) {
+				return res.status(401).json('Unauthorized');
+			}
+
 			const userData = await userRepository.findOne({where: {id}});
 			const photoOriginal: string = userData!.photo ?? '';
 			const photo: string = req.file?.filename ?? '';
@@ -49,11 +71,12 @@ class EditUserController {
 				const userUpdate = userRepository.merge(userData, newUser);
 				await userRepository.save(userUpdate);
 			}
+
+			return res.status(200).json('User updated successfully!');
+		} catch (err) {
+			console.log(err);
+			return res.status(500).json({error: 'Login error, contact support.'});
 		}
-
-		void updateUser();
-
-		return res.status(200).json('user updated successfully!');
 	}
 }
 

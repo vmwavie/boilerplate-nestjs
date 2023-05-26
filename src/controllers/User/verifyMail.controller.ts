@@ -1,9 +1,8 @@
-import * as crypto from 'crypto';
 import validate from 'deep-email-validator';
 import * as dotenv from 'dotenv';
 import {type Request, type Response} from 'express';
 import {createTransport} from 'nodemailer';
-import {v1} from 'uuid';
+import {cryptToken} from '../../utils';
 
 dotenv.config();
 
@@ -21,25 +20,6 @@ class VerifyMail {
 			return;
 		}
 
-		function generateVerificationCode() {
-			const timestamp = new Date().getTime();
-			const uuid = v1();
-			const verificationCode = `${timestamp}-${uuid}`;
-			return verificationCode;
-		}
-
-		const verifyCode = generateVerificationCode();
-
-		function encryptVerificationCode() {
-			const iv = crypto.randomBytes(12);
-			const cipher = crypto.createCipheriv('aes-256-gcm', process.env.TOKEN_HASH!, iv);
-			const encryptedCode = Buffer.concat([cipher.update(verifyCode, 'utf8'), cipher.final()]);
-			const tag = cipher.getAuthTag();
-			return Buffer.concat([iv, tag, encryptedCode]).toString('base64');
-		}
-
-		const cryptToken = encryptVerificationCode();
-
 		const transporter = createTransport({
 			host: 'sandbox.smtp.mailtrap.io',
 			port: 2525,
@@ -51,21 +31,16 @@ class VerifyMail {
 
 		const emailBody = `
 			<p style="font-size:16px;color:#555;line-height:1.2;font-family:Arial,Helvetica Neue,Helvetica,sans-serif">Hi,</p>
-			<p style="font-size:16px;color:#555;line-height:1.2;font-family:Arial,Helvetica Neue,Helvetica,sans-serif">Click on the button below to proceed with the registration:</p>
-			<p>
-				<a style="text-decoration:none;display:inline-block;color:#ffffff;background-color:#92cc22;border-radius:5px;width:auto;border-top:0px solid transparent;font-weight:400;border-right:0px solid transparent;border-bottom:0px solid transparent;border-left:0px solid transparent;padding-top:5px;padding-bottom:5px;font-family:Arial,Helvetica Neue,Helvetica,sans-serif;font-size:16px;text-align:center;word-break:keep-all"
-					href=${process.env.PASSWORD_LINK!}?code=${cryptToken}>
-					<span style="padding-left:20px;padding-right:20px;font-size:16px;display:inline-block;letter-spacing:normal">
-					Register a password
-					</span>
-				</a>
+			<p style="font-size:16px;color:#555;line-height:1.2;font-family:Arial,Helvetica Neue,Helvetica,sans-serif">Use the code below to verify on the website:</p>
+			<p style="font-size:13px;color:#171717;font-family:Arial,Helvetica Neue,Helvetica,sans-serif">
+			${cryptToken}
 			</p>
 		`;
 
 		await transporter.sendMail({
 			from: process.env.MAIL_PROVIDER,
 			to: email,
-			subject: 'Register a password',
+			subject: 'Verification Code',
 			html: emailBody,
 		});
 

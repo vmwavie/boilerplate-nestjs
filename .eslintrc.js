@@ -25,6 +25,7 @@ module.exports = {
 		sourceType: 'module',
 	},
 	rules: {
+		'no-unused-expressions': 'error',
 		'new-cap': [
 			'error',
 			{

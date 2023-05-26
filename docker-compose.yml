@@ -13,7 +13,7 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: 123123
-      POSTGRES_DB: blog-math
+      POSTGRES_DB: payment-api
     volumes:
       - db-data:/var/lib/postgresql/data
     ports:

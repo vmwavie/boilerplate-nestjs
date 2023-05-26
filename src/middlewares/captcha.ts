@@ -22,4 +22,3 @@ export async function verifyCaptcha(
 		return res.status(500).json('Invalid Token Captcha');
 	}
 }
-
