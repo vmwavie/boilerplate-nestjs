@@ -22,17 +22,17 @@ BaseUrl="http://localhost:3333" // Url from backend
 Make sure you configured `/src/config/data-source.ts`, like below :
 
 ```ts
-	type: 'postgres',
-	host: 'db-1',
-	port: 5432,
-	username: 'postgres',
-	password: '123123',
-	database: 'payment-api',
-	synchronize: true,
-	logging: false,
-	entities: [User],
-	migrations: [CreateUserTable1682197861733],
-	subscribers: [],
+type: 'postgres',
+host: 'db-1',
+port: 5432,
+username: 'postgres',
+password: '123123',
+database: 'payment-api',
+synchronize: true,
+logging: false,
+entities: [User],
+migrations: [CreateUserTable1682197861733],
+subscribers: [],
 ```
 
 Install all dependencies
