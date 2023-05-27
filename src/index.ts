@@ -7,11 +7,16 @@ import bodyParser from 'body-parser';
 import {appDataSource} from './config/data-source';
 import routers from './routes';
 
+import {serve, setup} from 'swagger-ui-express';
+import swaggerFile from './doc/swagger_output.json';
+
 dotenv.config();
 const app = express();
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded());
+
+app.use('/swagger-ui', serve, setup(swaggerFile));
 
 app.use(
 	'/images',

@@ -1,5 +1,6 @@
 import {compareSync} from 'bcryptjs';
 import * as crypto from 'crypto';
+import * as dotenv from 'dotenv';
 import {type Request, type Response} from 'express';
 import {sign} from 'jsonwebtoken';
 import {appDataSource} from '../../config/data-source';
@@ -10,6 +11,8 @@ type AuthUserQuery = {
 	password: string;
 	verifyToken: string;
 };
+
+dotenv.config();
 
 class AuthUserController {
 	async handle(req: Request, res: Response): Promise<Response> {
@@ -57,7 +60,7 @@ class AuthUserController {
 
 			const token = sign(
 				{email, userId: user.id},
-				'e8d95a51f3af4a3b134bf6bb680a213a', // Generate token in https://www.md5hashgenerator.com/
+				process.env.CRYPT_HASH!,
 				{expiresIn: '1000d'},
 			);
 

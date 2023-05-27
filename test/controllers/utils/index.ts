@@ -1,4 +1,7 @@
+import * as dotenv from 'dotenv';
 import {sign} from 'jsonwebtoken';
+
+dotenv.config();
 
 export const defaultUser = {
 	id: 17,
@@ -15,6 +18,6 @@ const tokenData = {
 
 export const token = sign(
 	tokenData,
-	'e8d95a51f3af4a3b134bf6bb680a213a',
+	process.env.CRYPT_HASH!,
 	{expiresIn: '1d'},
 );
