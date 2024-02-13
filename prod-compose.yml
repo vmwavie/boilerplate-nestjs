@@ -8,17 +8,3 @@ services:
     environment:
       POSTGRES_HOST: postgres:123123@postgres:5432
       PORT: 8080
-    depends_on:
-      - postgres
-    links:
-      - postgres
-
-  postgres:
-    container_name: postgres
-    restart: always
-    image: postgres
-    ports:
-      - 5432:5432
-    environment:
-      POSTGRES_PASSWORD: 123123
-      POSTGRES_DB: boilerplate

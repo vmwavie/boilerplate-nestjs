@@ -4,15 +4,14 @@ services:
     container_name: boilerplate-nestjs-dev
     build: .
     ports:
-      - 8080:8080
+      - 8080:3000
     environment:
       POSTGRES_HOST: postgres:123123@postgres:5432
-      PORT: 8080
+      PORT: 3000
     depends_on:
       - postgres
     links:
       - postgres
-
   postgres:
     container_name: postgres
     restart: always

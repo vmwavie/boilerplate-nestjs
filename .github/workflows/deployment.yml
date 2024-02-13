@@ -1,0 +1,35 @@
+name: Deploy
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [master]
+jobs:
+  test-ci:
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        node-version: [18x]
+    steps:
+    - uses: actions/checkout@v3
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+    - run: npm ci
+    - run: npm run test:cov
+    - run: npm run test:e2e
+  deploy:
+    needs: test-ci
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-20.04
+    concurrency: deploy-to-production
+    environment: production
+    steps:
+      - uses: actions/checkout@v3
+      - name: Use Node.js 18.x
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.x
+      - run: docker build -t boilerplate-nestjs-prod .
+      - run: echo "Deploy"
